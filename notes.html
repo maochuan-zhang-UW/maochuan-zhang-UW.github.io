@@ -1,0 +1,2543 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Research Notes</title>
+<script>
+  (function () {
+    var t = 'midnight';
+    try {
+      var stored = localStorage.getItem('vaultnotes-theme');
+      if (stored === 'midnight' || stored === 'paper') t = stored;
+    } catch (e) {}
+    document.documentElement.setAttribute('data-theme', t);
+  })();
+</script>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Geist:wght@300;400;500;600;700&family=Geist+Mono:wght@300;400;500&family=Fraunces:opsz,wght@9..144,300;9..144,400;9..144,500&display=swap" rel="stylesheet">
+<script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/katex.min.css">
+<script src="https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/katex.min.js"></script>
+<style>
+
+:root, :root[data-theme="midnight"] {
+  --fm:          #f5a833;
+  --fm-dim:      #624314;
+  --fm-glow:     rgba(245, 168, 51, 0.10);
+  --fmml:          #a37cff;
+  --fmml-dim:      #413166;
+  --fmml-glow:     rgba(163, 124, 255, 0.10);
+
+  --sidebar-w: 304px;
+  --header-h:  58px;
+  --font-sans: 'Geist', -apple-system, BlinkMacSystemFont, sans-serif;
+  --font-mono: 'Geist Mono', 'SF Mono', Menlo, monospace;
+  --font-serif: 'Fraunces', Georgia, serif;
+  --radius-sm: 6px;
+  --radius-md: 10px;
+  --radius-lg: 14px;
+  --shadow-diffuse: 0 20px 40px -18px rgba(0,0,0,0.55), 0 1px 0 rgba(255,255,255,0.03) inset;
+
+  --bg:             #0c0c0f;
+  --bg2:            #131318;
+  --bg3:            #191920;
+  --bg4:            #22222b;
+  --border:         #26262f;
+  --border-2:       #363642;
+  --accent:         #4bb8c0;
+  --accent-dim:     #1f4a4e;
+  --accent-glow:    rgba(75, 184, 192, 0.08);
+  --text:           #e8e8ea;
+  --text-2:         #a0a0a8;
+  --text-3:         #5c5c66;
+  --text-muted:     #7a7a84;
+}
+
+:root[data-theme="paper"] {
+  --bg:             #f5f2eb;
+  --bg2:            #ece7dc;
+  --bg3:            #e3ddcd;
+  --bg4:            #d6ceba;
+  --border:         #cabfa8;
+  --border-2:       #a89d84;
+  --accent:         #2a7a80;
+  --accent-dim:     #a8c8cb;
+  --accent-glow:    rgba(42, 122, 128, 0.08);
+  --text:           #1a1a1f;
+  --text-2:         #5a5a63;
+  --text-3:         #8a8a93;
+  --text-muted:     #6a6a73;
+}
+
+* { box-sizing: border-box; margin: 0; padding: 0; }
+html { font-size: 16px; }
+
+body {
+  background: var(--bg);
+  color: var(--text);
+  font-family: var(--font-sans);
+  font-size: 0.94rem;
+  line-height: 1.6;
+  height: 100vh;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+body::before {
+  content: '';
+  position: fixed;
+  inset: 0;
+  background:
+    radial-gradient(ellipse 85% 40% at 50% -8%, rgba(75,184,192,0.05) 0%, transparent 60%),
+    radial-gradient(ellipse 45% 65% at 100% 100%, rgba(152,132,216,0.025) 0%, transparent 50%);
+  pointer-events: none;
+  z-index: 0;
+}
+
+/* ── Header ── */
+header {
+  height: var(--header-h);
+  background: var(--bg2);
+  border-bottom: 1px solid var(--border);
+  display: flex;
+  align-items: center;
+  padding: 0 24px;
+  gap: 16px;
+  position: relative;
+  z-index: 10;
+  flex-shrink: 0;
+}
+
+header::after {
+  content: '';
+  position: absolute;
+  bottom: -1px; left: 0; right: 0;
+  height: 1px;
+  background: linear-gradient(90deg, transparent 0%, var(--accent) 30%, var(--accent) 70%, transparent 100%);
+  opacity: 0.15;
+}
+
+.wordmark {
+  font-family: var(--font-sans);
+  font-size: 13.5px;
+  font-weight: 600;
+  color: var(--text);
+  letter-spacing: -0.005em;
+  text-decoration: none;
+  white-space: nowrap;
+}
+
+.wordmark .accent-dot { color: var(--accent); }
+
+.divider {
+  width: 1px; height: 22px;
+  background: var(--border);
+  flex-shrink: 0;
+}
+
+.project-tabs {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  flex: 1;
+}
+
+.tab-sep {
+  width: 1px; height: 18px;
+  background: var(--border);
+  margin: 0 6px;
+  flex-shrink: 0;
+}
+
+.tab {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 6px 14px;
+  border-radius: var(--radius-sm);
+  border: 1px solid transparent;
+  cursor: pointer;
+  font-family: var(--font-sans);
+  font-size: 13px;
+  font-weight: 500;
+  letter-spacing: -0.005em;
+  color: var(--text-2);
+  transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+  background: transparent;
+  white-space: nowrap;
+}
+
+.tab:hover { color: var(--text); background: var(--bg3); border-color: var(--border-2); }
+
+.tab[data-project="Dashboard"].active {
+  color: var(--accent);
+  background: var(--accent-glow);
+  border-color: var(--accent-dim);
+}
+
+.tab[data-project="FM"].active {
+  color: var(--fm);
+  background: var(--fm-glow);
+  border-color: var(--fm-dim);
+}
+
+.tab[data-project="FM_ML"].active {
+  color: var(--fmml);
+  background: var(--fmml-glow);
+  border-color: var(--fmml-dim);
+}
+
+.tab-dot {
+  width: 7px; height: 7px;
+  border-radius: 50%;
+  flex-shrink: 0;
+}
+
+.dot-fm { background: var(--fm); box-shadow: 0 0 0 2px var(--fm-glow); }
+.dot-fmml { background: var(--fmml); box-shadow: 0 0 0 2px var(--fmml-glow); }
+
+.tab-dash-icon { font-size: 15px; opacity: 0.8; }
+
+.back-link {
+  font-family: var(--font-mono);
+  font-size: 11px;
+  color: var(--text-3);
+  text-decoration: none;
+  letter-spacing: 0.02em;
+  transition: color 0.15s;
+  white-space: nowrap;
+}
+.back-link:hover { color: var(--text-2); }
+
+.theme-toggle {
+  background: transparent;
+  border: 1px solid var(--border);
+  color: var(--text-3);
+  width: 28px; height: 28px;
+  border-radius: var(--radius-sm);
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 13px;
+  transition: color 0.15s, border-color 0.15s, background 0.15s;
+  margin-left: auto;
+  flex-shrink: 0;
+}
+.theme-toggle:hover { color: var(--accent); border-color: var(--border-2); background: var(--bg3); }
+.theme-toggle .icon { display: none; }
+:root[data-theme="midnight"] .theme-toggle .sun  { display: inline; }
+:root[data-theme="paper"]    .theme-toggle .moon { display: inline; }
+
+/* ── Layout ── */
+.layout {
+  display: flex;
+  flex: 1;
+  overflow: hidden;
+  position: relative;
+  z-index: 1;
+}
+
+.layout.dashboard-mode aside { display: none; }
+
+/* ── Sidebar ── */
+aside {
+  width: var(--sidebar-w);
+  background: var(--bg2);
+  border-right: 1px solid var(--border);
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  flex-shrink: 0;
+}
+
+.sidebar-header {
+  padding: 14px 20px 12px;
+  border-bottom: 1px solid var(--border);
+  font-family: var(--font-mono);
+  font-size: 10px;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--text-3);
+  font-weight: 500;
+}
+
+.file-tree {
+  flex: 1;
+  overflow-y: auto;
+  padding: 10px 0;
+}
+
+.file-tree::-webkit-scrollbar { width: 3px; }
+.file-tree::-webkit-scrollbar-track { background: transparent; }
+.file-tree::-webkit-scrollbar-thumb { background: var(--border-2); border-radius: 2px; }
+
+.folder { margin-bottom: 4px; }
+
+.folder-label {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 20px;
+  cursor: pointer;
+  font-family: var(--font-sans);
+  font-size: 12.5px;
+  font-weight: 500;
+  letter-spacing: -0.005em;
+  color: var(--text);
+  transition: color 0.12s;
+  user-select: none;
+}
+
+.folder-label:hover { color: var(--accent); }
+
+.folder-label .chevron {
+  font-size: 9px;
+  transition: transform 0.2s ease;
+  color: var(--text-3);
+  width: 10px;
+  flex-shrink: 0;
+  text-align: center;
+  display: inline-block;
+}
+
+.folder.open .chevron { transform: rotate(90deg); }
+
+.folder-dot { width: 6px; height: 6px; border-radius: 50%; flex-shrink: 0; }
+
+.file-list { display: none; padding-left: 16px; padding-bottom: 6px; }
+.folder.open .file-list { display: block; }
+
+.file-item {
+  display: flex;
+  align-items: flex-start;
+  gap: 8px;
+  padding: 6px 16px 6px 10px;
+  cursor: pointer;
+  font-family: var(--font-mono);
+  font-size: 12px;
+  color: var(--text-2);
+  border-left: 2px solid transparent;
+  transition: all 0.18s cubic-bezier(0.16, 1, 0.3, 1);
+  border-radius: 0 var(--radius-sm) var(--radius-sm) 0;
+  line-height: 1.5;
+  opacity: 0;
+  animation: fileItemIn 0.35s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+  animation-delay: calc(var(--i, 0) * 22ms);
+}
+
+@keyframes fileItemIn {
+  from { opacity: 0; transform: translateX(-4px); }
+  to   { opacity: 1; transform: translateX(0); }
+}
+
+.file-item:hover { color: var(--text); border-left-color: var(--border-2); background: rgba(220,235,255,0.03); transform: translateX(2px); }
+.file-item.active { color: var(--text); border-left-color: var(--accent); background: var(--accent-glow); }
+.file-icon { color: var(--text-3); font-size: 10px; flex-shrink: 0; margin-top: 3px; }
+.file-item.active .file-icon { color: var(--accent); }
+
+/* ── Main ── */
+main { flex: 1; display: flex; flex-direction: column; overflow: hidden; }
+
+main.dashboard-active .content-header { display: none; }
+main.dashboard-active .content-scroll {
+  padding: 0;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+  min-height: 0;
+}
+main.dashboard-active #content-area {
+  flex: 1;
+  display: flex;
+  min-height: 0;
+}
+main.dashboard-active #content-area > .dashboard-layout {
+  flex: 1;
+  min-height: 0;
+}
+
+.content-header {
+  padding: 11px 40px;
+  border-bottom: 1px solid var(--border);
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  background: var(--bg);
+  flex-shrink: 0;
+  min-height: 44px;
+}
+
+.breadcrumb {
+  font-family: var(--font-mono);
+  font-size: 11.5px;
+  color: var(--text-3);
+  letter-spacing: 0.01em;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex: 1;
+  flex-wrap: wrap;
+}
+
+.breadcrumb span { color: var(--text-2); }
+
+.content-scroll {
+  flex: 1;
+  overflow-y: auto;
+  padding: 48px 80px 100px;
+}
+.content-scroll.iframe-mode {
+  padding: 0;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+}
+.content-scroll.iframe-mode #content-area {
+  flex: 1;
+  height: 100%;
+}
+
+.content-scroll::-webkit-scrollbar { width: 4px; }
+.content-scroll::-webkit-scrollbar-track { background: transparent; }
+.content-scroll::-webkit-scrollbar-thumb { background: var(--border-2); border-radius: 3px; }
+
+/* ── Empty state ── */
+.empty-state {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  height: 100%;
+  gap: 14px;
+  color: var(--text-3);
+  text-align: center;
+}
+
+.empty-glyph { font-size: 40px; opacity: 0.22; margin-bottom: 8px; }
+.empty-state p { font-family: var(--font-mono); font-size: 12px; letter-spacing: 0.02em; }
+
+/* ── Project landing ── */
+.project-landing {
+  display: grid;
+  grid-template-columns: minmax(0, 5fr) minmax(0, 7fr);
+  gap: 32px;
+  padding: 48px 56px 64px;
+  align-content: start;
+  max-width: 1200px;
+  margin: 0 auto;
+  width: 100%;
+}
+
+.project-hero {
+  border: 1px solid var(--border);
+  border-radius: var(--radius-lg);
+  padding: 32px 32px 28px;
+  background: linear-gradient(180deg, var(--bg2) 0%, var(--bg) 100%);
+  position: relative;
+  overflow: hidden;
+  box-shadow: var(--shadow-diffuse);
+}
+
+.project-hero::before {
+  content: '';
+  position: absolute;
+  top: 0; left: 0; right: 0;
+  height: 1px;
+}
+
+.project-hero.fm::before { background: linear-gradient(90deg, transparent, var(--fm) 40%, var(--fm) 60%, transparent); opacity: 0.7; }
+.project-hero.fmml::before { background: linear-gradient(90deg, transparent, var(--fmml) 40%, var(--fmml) 60%, transparent); opacity: 0.7; }
+
+.card-label { font-family: var(--font-mono); font-size: 10px; letter-spacing: 0.18em; text-transform: uppercase; margin-bottom: 14px; font-weight: 500; }
+.card-label.fm { color: var(--fm); }
+.card-label.fmml { color: var(--fmml); }
+
+.card-title { font-family: var(--font-serif); font-size: 30px; font-weight: 400; color: var(--text); margin-bottom: 14px; line-height: 1.15; letter-spacing: -0.02em; }
+.card-desc { font-family: var(--font-sans); font-size: 14px; color: var(--text-2); line-height: 1.6; white-space: pre-line; }
+.card-count { margin-top: 22px; padding-top: 18px; border-top: 1px solid var(--border); font-family: var(--font-mono); font-size: 11px; color: var(--text-3); display: flex; align-items: center; gap: 8px; letter-spacing: 0.02em; }
+
+/* File list on the right */
+.landing-files {
+  display: flex;
+  flex-direction: column;
+}
+
+.landing-files-head {
+  font-family: var(--font-mono);
+  font-size: 10px;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--text-3);
+  padding: 0 4px 14px;
+  border-bottom: 1px solid var(--border);
+  margin-bottom: 4px;
+  font-weight: 500;
+}
+
+.landing-file {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  padding: 14px 4px;
+  border-bottom: 1px solid var(--border);
+  cursor: pointer;
+  transition: all 0.18s cubic-bezier(0.16, 1, 0.3, 1);
+  opacity: 0;
+  animation: fileItemIn 0.4s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+  animation-delay: calc(var(--i, 0) * 28ms);
+}
+
+.landing-file:hover { padding-left: 12px; border-bottom-color: var(--border-2); }
+.landing-file:hover .landing-file-arrow { opacity: 1; transform: translateX(0); }
+
+.landing-file-icon {
+  font-family: var(--font-mono);
+  font-size: 10px;
+  color: var(--text-3);
+  flex-shrink: 0;
+  width: 16px;
+}
+
+.landing-file-name {
+  font-family: var(--font-mono);
+  font-size: 12.5px;
+  color: var(--text);
+  flex: 1;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.landing-file-arrow {
+  font-family: var(--font-mono);
+  font-size: 13px;
+  color: var(--text-3);
+  opacity: 0;
+  transform: translateX(-4px);
+  transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.landing-file.fm:hover .landing-file-arrow { color: var(--fm); }
+.landing-file.fmml:hover .landing-file-arrow { color: var(--fmml); }
+
+/* ── Dashboard layout ── */
+.dashboard-layout {
+  position: relative;
+  height: 100%;
+  overflow: hidden;
+  background:
+    radial-gradient(ellipse 60% 50% at 30% 35%, rgba(75,184,192,0.04) 0%, transparent 60%),
+    radial-gradient(ellipse 50% 50% at 70% 65%, rgba(152,132,216,0.03) 0%, transparent 60%);
+}
+
+/* ── Constellation stage (fills dashboard) ── */
+.constellation-stage {
+  position: absolute;
+  inset: 0;
+  z-index: 1;
+}
+
+.constellation-stage canvas {
+  display: block;
+  width: 100%;
+  height: 100%;
+  cursor: grab;
+  touch-action: none;
+  user-select: none;
+  -webkit-user-select: none;
+}
+
+.constellation-stage canvas:active { cursor: grabbing; }
+
+.constellation-tooltip {
+  position: absolute;
+  pointer-events: none;
+  background: var(--bg2);
+  border: 1px solid var(--border-2);
+  border-radius: var(--radius-sm);
+  padding: 8px 12px;
+  font-family: var(--font-mono);
+  font-size: 11.5px;
+  color: var(--text);
+  white-space: nowrap;
+  opacity: 0;
+  transform: translate(-50%, -130%);
+  transition: opacity 0.15s ease;
+  z-index: 5;
+  box-shadow: var(--shadow-diffuse);
+  max-width: 320px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.constellation-tooltip.visible { opacity: 1; }
+
+.constellation-tooltip .tt-label {
+  font-size: 9.5px;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  display: block;
+  margin-bottom: 3px;
+  font-weight: 500;
+}
+
+/* HUD overlay — sits on top of canvas */
+.dashboard-hud {
+  position: absolute;
+  top: 28px;
+  left: 32px;
+  z-index: 3;
+  pointer-events: none;
+  max-width: 420px;
+}
+
+.hud-eyebrow {
+  font-family: var(--font-mono);
+  font-size: 10px;
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
+  color: var(--text-3);
+  font-weight: 500;
+  margin-bottom: 10px;
+}
+
+.hud-title {
+  font-family: var(--font-serif);
+  font-size: clamp(26px, 3.2vw, 38px);
+  font-weight: 400;
+  line-height: 1.05;
+  letter-spacing: -0.03em;
+  color: var(--text);
+  margin-bottom: 12px;
+  max-width: 14ch;
+}
+
+.hud-sub {
+  font-family: var(--font-sans);
+  font-size: 13px;
+  color: var(--text-2);
+  line-height: 1.55;
+  max-width: 360px;
+}
+
+.hud-hint {
+  margin-top: 14px;
+  font-family: var(--font-mono);
+  font-size: 10.5px;
+  color: var(--text-3);
+  letter-spacing: 0.04em;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+.hud-hint .kbd {
+  padding: 2px 6px;
+  border: 1px solid var(--border-2);
+  border-radius: 3px;
+  background: rgba(255,255,255,0.03);
+  font-size: 9.5px;
+  color: var(--text-2);
+}
+
+.hud-stats {
+  display: flex;
+  gap: 28px;
+  margin-top: 22px;
+  font-family: var(--font-mono);
+}
+
+.hud-stat { display: flex; flex-direction: column; gap: 4px; }
+.hud-stat-n  { font-size: 22px; color: var(--text); letter-spacing: -0.01em; }
+.hud-stat-l  { font-size: 10px; letter-spacing: 0.14em; text-transform: uppercase; color: var(--text-3); }
+
+/* Floating calendar — bottom-right card */
+.cal-floating {
+  position: absolute;
+  right: 28px;
+  bottom: 28px;
+  z-index: 4;
+  width: 300px;
+  background: rgba(19, 19, 24, 0.82);
+  backdrop-filter: blur(18px) saturate(130%);
+  -webkit-backdrop-filter: blur(18px) saturate(130%);
+  border: 1px solid var(--border-2);
+  border-radius: var(--radius-lg);
+  padding: 18px 18px 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+  box-shadow:
+    0 24px 60px -20px rgba(0,0,0,0.7),
+    inset 0 1px 0 rgba(255,255,255,0.04);
+  transition: opacity 0.3s, transform 0.3s;
+}
+
+/* When drawer opens, tuck calendar behind it */
+.notes-drawer.open ~ .cal-floating,
+.dashboard-layout.drawer-open .cal-floating {
+  opacity: 0;
+  transform: translateX(20px);
+  pointer-events: none;
+}
+
+/* Notes drawer — slides in from right when a date is selected */
+.notes-drawer {
+  position: absolute;
+  top: 0;
+  right: 0;
+  bottom: 0;
+  width: 420px;
+  z-index: 4;
+  background: rgba(19, 19, 24, 0.92);
+  backdrop-filter: blur(20px) saturate(130%);
+  -webkit-backdrop-filter: blur(20px) saturate(130%);
+  border-left: 1px solid var(--border-2);
+  display: flex;
+  flex-direction: column;
+  transform: translateX(100%);
+  transition: transform 0.42s cubic-bezier(0.22, 1, 0.36, 1);
+  box-shadow: -24px 0 60px -20px rgba(0,0,0,0.6);
+}
+
+.notes-drawer.open { transform: translateX(0); }
+
+.notes-drawer-head {
+  padding: 28px 28px 18px;
+  border-bottom: 1px solid var(--border);
+  position: relative;
+}
+
+.notes-drawer-close {
+  position: absolute;
+  top: 18px;
+  right: 18px;
+  width: 28px;
+  height: 28px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: transparent;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  color: var(--text-3);
+  cursor: pointer;
+  font-family: var(--font-mono);
+  font-size: 13px;
+  line-height: 1;
+  transition: all 0.15s;
+}
+.notes-drawer-close:hover { color: var(--text); border-color: var(--border-2); }
+
+.notes-drawer-eyebrow {
+  font-family: var(--font-mono);
+  font-size: 10px;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  color: var(--text-3);
+  margin-bottom: 8px;
+  font-weight: 500;
+}
+
+.notes-drawer-title {
+  font-family: var(--font-serif);
+  font-size: 26px;
+  font-weight: 400;
+  color: var(--text);
+  letter-spacing: -0.02em;
+  line-height: 1.15;
+}
+
+.notes-drawer-sub {
+  font-family: var(--font-mono);
+  font-size: 11px;
+  color: var(--text-3);
+  margin-top: 8px;
+  letter-spacing: 0.02em;
+}
+
+.notes-drawer-body {
+  flex: 1;
+  overflow-y: auto;
+  padding: 22px 28px 32px;
+}
+
+.notes-drawer-body::-webkit-scrollbar { width: 4px; }
+.notes-drawer-body::-webkit-scrollbar-thumb { background: var(--border-2); border-radius: 3px; }
+
+.cal-panel-legacy-hide { display: none; }
+
+.cal-panel {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+
+.cal-panel::-webkit-scrollbar { width: 3px; }
+.cal-panel::-webkit-scrollbar-track { background: transparent; }
+.cal-panel::-webkit-scrollbar-thumb { background: var(--border-2); border-radius: 2px; }
+
+.cal-nav {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+}
+
+.cal-month-label {
+  font-family: var(--font-serif);
+  font-size: 22px;
+  font-weight: 400;
+  color: var(--text);
+  letter-spacing: -0.02em;
+  text-align: center;
+  flex: 1;
+}
+
+.cal-nav-btn {
+  background: var(--bg3);
+  border: 1px solid var(--border);
+  color: var(--text-2);
+  width: 32px; height: 32px;
+  border-radius: var(--radius-sm);
+  cursor: pointer;
+  font-size: 16px;
+  font-family: var(--font-mono);
+  line-height: 1;
+  transition: all 0.18s cubic-bezier(0.16, 1, 0.3, 1);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+
+.cal-nav-btn:active { transform: translateY(1px); }
+
+.cal-nav-btn:hover { color: var(--text); border-color: var(--border-2); background: var(--bg4); }
+
+.cal-grid {
+  display: grid;
+  grid-template-columns: repeat(7, 1fr);
+  gap: 3px;
+}
+
+.cal-dow {
+  text-align: center;
+  font-family: var(--font-mono);
+  font-size: 10px;
+  letter-spacing: 0.08em;
+  color: var(--text-3);
+  padding: 6px 2px 8px;
+  text-transform: uppercase;
+  font-weight: 500;
+}
+
+.cal-day {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  border-radius: 6px;
+  cursor: default;
+  transition: all 0.14s;
+  position: relative;
+  padding: 5px 2px 4px;
+  gap: 3px;
+  min-height: 38px;
+}
+
+.cal-day.clickable { cursor: pointer; }
+.cal-day.clickable:hover { background: var(--bg3); }
+
+.cal-day-num {
+  font-family: var(--font-mono);
+  font-size: 12.5px;
+  color: var(--text-2);
+  line-height: 1;
+}
+
+.cal-day.other-month .cal-day-num { color: var(--text-3); opacity: 0.5; }
+.cal-day.today { background: var(--accent-glow); }
+.cal-day.today .cal-day-num { color: var(--accent); font-weight: 500; }
+
+.cal-day.selected {
+  background: var(--bg4) !important;
+  border: 1px solid var(--border-2);
+  box-shadow: 0 0 0 1px var(--border-2) inset;
+}
+
+.cal-day.selected .cal-day-num { color: var(--text) !important; }
+
+.cal-dots {
+  display: flex;
+  gap: 2px;
+  justify-content: center;
+  min-height: 5px;
+}
+
+.cal-dot {
+  width: 5px; height: 5px;
+  border-radius: 50%;
+  flex-shrink: 0;
+}
+
+.cal-legend {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  padding-top: 4px;
+  border-top: 1px solid var(--border);
+}
+
+.cal-legend-item {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-family: var(--font-mono);
+  font-size: 11px;
+  color: var(--text-2);
+  letter-spacing: 0.02em;
+}
+
+/* ── Notes panel (right side of dashboard) ── */
+.notes-panel {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+}
+
+.notes-panel-header {
+  padding: 24px 32px 18px;
+  border-bottom: 1px solid var(--border);
+  flex-shrink: 0;
+}
+
+.notes-panel-title {
+  font-family: var(--font-serif);
+  font-size: 28px;
+  font-weight: 400;
+  color: var(--text);
+  letter-spacing: -0.02em;
+  line-height: 1.15;
+}
+
+.notes-panel-sub {
+  font-family: var(--font-mono);
+  font-size: 11px;
+  color: var(--text-3);
+  margin-top: 8px;
+  letter-spacing: 0.02em;
+}
+
+.notes-panel-body {
+  flex: 1;
+  overflow-y: auto;
+  padding: 20px 32px 40px;
+}
+
+.notes-panel-body::-webkit-scrollbar { width: 4px; }
+.notes-panel-body::-webkit-scrollbar-track { background: transparent; }
+.notes-panel-body::-webkit-scrollbar-thumb { background: var(--border-2); border-radius: 3px; }
+
+.note-entry {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  padding: 13px 16px;
+  border-radius: var(--radius-md);
+  border: 1px solid var(--border);
+  margin-bottom: 8px;
+  background: var(--bg2);
+  cursor: pointer;
+  transition: all 0.22s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.note-entry:hover { border-color: var(--border-2); transform: translateX(2px); background: var(--bg3); box-shadow: var(--shadow-diffuse); }
+.note-entry:active { transform: translateX(2px) scale(0.99); }
+.note-entry.highlighted { border-color: var(--border-2); background: var(--bg3); }
+
+.note-date-badge {
+  font-family: var(--font-mono);
+  font-size: 11px;
+  color: var(--text-3);
+  min-width: 50px;
+  flex-shrink: 0;
+}
+
+.note-proj-badge {
+  font-family: var(--font-mono);
+  font-size: 9.5px;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  padding: 3px 8px;
+  border-radius: 4px;
+  flex-shrink: 0;
+  white-space: nowrap;
+  font-weight: 500;
+}
+
+.note-filename {
+  font-family: var(--font-mono);
+  font-size: 12.5px;
+  color: var(--text);
+  flex: 1;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.note-open-hint {
+  font-family: var(--font-mono);
+  font-size: 11px;
+  color: var(--text-3);
+  flex-shrink: 0;
+  transition: color 0.12s;
+}
+
+.note-entry:hover .note-open-hint { color: var(--accent); }
+
+.timeline-section-header {
+  font-family: var(--font-mono);
+  font-size: 10px;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--text-3);
+  padding: 18px 0 12px;
+  border-bottom: 1px solid var(--border);
+  margin-bottom: 14px;
+  font-weight: 500;
+}
+
+.timeline-section-header:first-child { padding-top: 0; }
+
+.no-notes-hint {
+  font-family: var(--font-mono);
+  font-size: 12px;
+  color: var(--text-3);
+  padding: 24px 0;
+  letter-spacing: 0.02em;
+}
+
+/* ── Markdown ── */
+.md-body { max-width: 720px; font-size: 15.5px; line-height: 1.78; font-family: var(--font-serif); }
+
+.md-body h1 {
+  font-family: var(--font-serif);
+  font-size: 36px; font-weight: 400;
+  color: #f0f0ef; margin-bottom: 28px; padding-bottom: 16px;
+  border-bottom: 1px solid var(--border);
+  line-height: 1.15; letter-spacing: -0.025em;
+}
+
+.md-body h2 {
+  font-family: var(--font-serif);
+  font-size: 24px; font-weight: 400;
+  color: #dcdcdb; margin: 44px 0 14px;
+  line-height: 1.25; letter-spacing: -0.018em;
+}
+
+.md-body h3 {
+  font-family: var(--font-mono);
+  font-size: 11px; letter-spacing: 0.12em; text-transform: uppercase;
+  color: var(--accent); margin: 34px 0 12px; font-weight: 500;
+}
+
+.md-body h4 { font-family: var(--font-mono); font-size: 11.5px; color: var(--text-2); margin: 24px 0 10px; letter-spacing: 0.04em; font-weight: 500; }
+.md-body p  { color: var(--text); margin-bottom: 16px; line-height: 1.78; font-size: 15.5px; }
+.md-body ul, .md-body ol { margin: 0 0 16px 22px; color: var(--text); line-height: 1.78; }
+.md-body li { margin-bottom: 5px; font-size: 15.5px; }
+.md-body li input[type="checkbox"] { margin-right: 8px; accent-color: var(--accent); }
+
+.md-body .wikilink {
+  color: var(--accent); border-bottom: 1px dashed var(--accent-dim);
+  padding-bottom: 1px; cursor: pointer; text-decoration: none;
+}
+.md-body a.wikilink:hover { border-bottom-style: solid; text-decoration: none; }
+.md-body a.wikilink.broken {
+  color: var(--text-muted); border-bottom-color: var(--text-muted);
+  cursor: not-allowed;
+}
+.md-body mark {
+  background: rgba(245, 168, 51, 0.18); color: var(--text);
+  padding: 0 3px; border-radius: 2px;
+}
+.md-body .katex { font-size: 1.05em; }
+.md-body .katex-display { margin: 18px 0; overflow-x: auto; overflow-y: hidden; }
+
+.md-body code {
+  font-family: var(--font-mono); font-size: 13px;
+  background: var(--bg3); border: 1px solid var(--border);
+  padding: 2px 6px; border-radius: 4px; color: #9cd0b8;
+}
+
+.md-body pre {
+  background: var(--bg3); border: 1px solid var(--border);
+  border-left: 2px solid var(--accent-dim); padding: 20px 24px;
+  border-radius: var(--radius-md); overflow-x: auto; margin-bottom: 22px;
+}
+
+.md-body pre code { background: none; border: none; padding: 0; font-size: 13px; color: #c0d8c4; line-height: 1.7; }
+
+.md-body blockquote {
+  border-left: 2px solid var(--accent-dim); padding: 12px 22px; margin: 0 0 16px;
+  color: var(--text-2); font-style: italic;
+  background: var(--accent-glow); border-radius: 0 var(--radius-md) var(--radius-md) 0;
+}
+
+.md-body table { width: 100%; border-collapse: collapse; margin-bottom: 24px; font-family: var(--font-mono); font-size: 13px; }
+.md-body th { background: var(--bg3); border: 1px solid var(--border); padding: 10px 14px; text-align: left; color: var(--accent); font-weight: 500; letter-spacing: 0.06em; font-size: 10.5px; text-transform: uppercase; }
+.md-body td { border: 1px solid var(--border); padding: 9px 14px; color: var(--text); line-height: 1.6; }
+.md-body tr:nth-child(even) td { background: rgba(255,255,255,0.02); }
+.md-body hr { border: none; border-top: 1px solid var(--border); margin: 36px 0; }
+.md-body a { color: var(--accent); text-decoration: none; }
+.md-body a:hover { text-decoration: underline; }
+.md-body strong { color: #f0ece0; font-weight: 600; }
+.md-body em { color: var(--text-2); }
+
+/* ── Loading (skeleton shimmer) ── */
+.loading { display: flex; flex-direction: column; gap: 14px; max-width: 720px; padding: 8px 0; }
+.skel {
+  height: 14px;
+  border-radius: 4px;
+  background: linear-gradient(90deg, var(--bg2) 0%, var(--bg3) 50%, var(--bg2) 100%);
+  background-size: 200% 100%;
+  animation: shimmer 1.6s linear infinite;
+}
+.skel.h1 { height: 32px; width: 55%; margin-bottom: 14px; }
+.skel.p  { width: 100%; }
+.skel.p.short { width: 72%; }
+.skel.p.mid   { width: 88%; }
+
+@keyframes shimmer {
+  0%   { background-position: 200% 0; }
+  100% { background-position: -200% 0; }
+}
+
+/* ── Status bar ── */
+.statusbar {
+  height: 26px; background: var(--bg2); border-top: 1px solid var(--border);
+  display: flex; align-items: center; padding: 0 20px; gap: 20px;
+  font-family: var(--font-mono); font-size: 10.5px; color: var(--text-3);
+  flex-shrink: 0; z-index: 10; letter-spacing: 0.01em;
+}
+
+.status-item { display: flex; align-items: center; gap: 7px; }
+.status-dot {
+  width: 6px; height: 6px; border-radius: 50%; background: var(--accent);
+  box-shadow: 0 0 0 2px var(--accent-glow);
+  animation: breathe 2.8s ease-in-out infinite;
+}
+
+@keyframes breathe {
+  0%, 100% { opacity: 0.7; }
+  50%      { opacity: 1; }
+}
+
+/* ── Entrance ── */
+@keyframes fadeUp {
+  from { opacity: 0; transform: translateY(6px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+header    { animation: fadeUp 0.38s ease both; }
+aside     { animation: fadeUp 0.38s ease 0.07s both; }
+main      { animation: fadeUp 0.38s ease 0.13s both; }
+.statusbar{ animation: fadeUp 0.38s ease 0.17s both; }
+
+/* ── Hamburger (desktop: hidden) ── */
+.sidebar-toggle {
+  display: none;
+  align-items: center;
+  justify-content: center;
+  background: transparent;
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  color: var(--text-2);
+  cursor: pointer;
+  width: 34px; height: 34px;
+  font-size: 17px;
+  flex-shrink: 0;
+  transition: all 0.14s;
+}
+.sidebar-toggle:hover { border-color: var(--border-2); color: var(--text); }
+
+/* ── Sidebar overlay (desktop: hidden) ── */
+.sidebar-overlay {
+  display: none;
+  position: fixed;
+  inset: 0;
+  background: rgba(0,0,0,0.55);
+  z-index: 99;
+  backdrop-filter: blur(2px);
+}
+.sidebar-overlay.visible { display: block; }
+
+/* ─────────────────────────────────────────────
+   MOBILE  ≤ 768px
+───────────────────────────────────────────── */
+@media (max-width: 768px) {
+
+  /* Header */
+  header {
+    padding: 0 12px;
+    gap: 10px;
+    height: 52px;
+  }
+
+  header::after { opacity: 0.15; }
+
+  .wordmark { font-size: 13px; }
+
+  .divider { display: none; }
+
+  .project-tabs {
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+    scrollbar-width: none;
+    gap: 4px;
+    flex: 1;
+  }
+  .project-tabs::-webkit-scrollbar { display: none; }
+
+  .tab {
+    font-size: 12px;
+    padding: 5px 11px;
+    gap: 6px;
+    flex-shrink: 0;
+  }
+
+  .tab-dot { width: 6px; height: 6px; }
+
+  .back-link { display: none; }
+
+  .sidebar-toggle { display: flex; }
+
+  /* Sidebar — slides in as overlay on mobile */
+  aside {
+    position: fixed;
+    top: 0; left: 0; bottom: 0;
+    z-index: 100;
+    width: 280px;
+    transform: translateX(-100%);
+    transition: transform 0.25s ease;
+    animation: none;
+    border-right: 1px solid var(--border-2);
+    box-shadow: 4px 0 24px rgba(0,0,0,0.5);
+  }
+
+  aside.open { transform: translateX(0); }
+
+  .layout.dashboard-mode aside { display: none !important; }
+
+  /* Main layout — no overflow hidden, let it be a normal flow */
+  .layout { overflow: visible; height: auto; }
+
+  main { overflow: visible; }
+
+  main.dashboard-active .content-scroll {
+    overflow-y: auto;
+    padding: 0;
+    height: auto;
+  }
+
+  .content-header { padding: 10px 16px; }
+
+  .content-scroll {
+    padding: 20px 16px 80px;
+    overflow-x: hidden;
+    overflow-y: auto;
+    height: auto;
+    flex: none;
+    min-height: 0;
+    max-width: 100vw;
+  }
+
+  .content-scroll.iframe-mode {
+    height: calc(100dvh - 52px - 44px);
+    overflow: hidden;
+  }
+
+  #content-area {
+    overflow-x: hidden;
+    max-width: 100%;
+  }
+
+  /* Dashboard stacks vertically on mobile */
+  main.dashboard-active .content-scroll { overflow-y: auto; }
+  main.dashboard-active #content-area { display: block; flex: none; }
+  .dashboard-layout {
+    display: block;
+    position: relative;
+    height: auto;
+    min-height: 0;
+    overflow: visible;
+  }
+  .constellation-stage {
+    position: relative;
+    inset: auto;
+    height: 52vh;
+    min-height: 340px;
+    max-height: 480px;
+    border-bottom: 1px solid var(--border);
+  }
+  .dashboard-hud {
+    position: static;
+    padding: 22px 18px 4px;
+    max-width: none;
+  }
+  .hud-title { font-size: 24px; margin-bottom: 10px; max-width: none; }
+  .hud-sub { font-size: 12.5px; }
+  .hud-stats { gap: 22px; margin-top: 16px; }
+  .hud-stat-n { font-size: 18px; }
+  .hud-hint { margin-top: 12px; }
+
+  .cal-floating {
+    position: static;
+    width: auto;
+    margin: 14px 18px 28px;
+    backdrop-filter: none;
+    -webkit-backdrop-filter: none;
+    background: var(--bg2);
+    opacity: 1 !important;
+    transform: none !important;
+    pointer-events: auto !important;
+  }
+  .notes-drawer {
+    position: fixed;
+    top: auto;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    width: 100%;
+    height: 72dvh;
+    border-left: none;
+    border-top: 1px solid var(--border-2);
+    border-radius: var(--radius-lg) var(--radius-lg) 0 0;
+    transform: translateY(100%);
+  }
+  .notes-drawer.open { transform: translateY(0); }
+
+  .cal-panel {
+    width: 100%;
+    padding: 0;
+    gap: 18px;
+  }
+
+  .cal-nav-btn { width: 36px; height: 36px; font-size: 20px; }
+  .cal-month-label { font-size: 18px; }
+
+  .cal-day { min-height: 42px; }
+  .cal-day-num { font-size: 12px; }
+
+  .notes-panel { flex: none; overflow: visible; }
+
+  .notes-panel-header { padding: 18px 16px 12px; }
+  .notes-panel-title { font-size: 20px; }
+
+  .notes-panel-body {
+    flex: none;
+    overflow-y: visible;
+    padding: 14px 16px 40px;
+  }
+
+  .notes-drawer-head { padding: 18px 20px 14px; }
+  .notes-drawer-title { font-size: 22px; }
+  .notes-drawer-body { padding: 18px 20px 32px; }
+
+  .note-entry { gap: 8px; padding: 10px 12px; }
+  .note-filename { font-size: 12px; }
+  .note-open-hint { display: none; } /* too cramped on mobile */
+
+  /* Project landing — single column */
+  .project-landing {
+    grid-template-columns: 1fr;
+    padding: 20px 16px 40px;
+    gap: 24px;
+  }
+  .project-hero { padding: 24px 22px 22px; }
+  .card-title { font-size: 26px; }
+  .card-desc { font-size: 13.5px; }
+
+  /* Markdown */
+  .md-body { font-size: 15px; }
+  .md-body h1 { font-size: 26px; }
+  .md-body h2 { font-size: 21px; }
+  .md-body h3 { font-size: 11px; }
+  .md-body table { font-size: 12px; }
+  .md-body th, .md-body td { padding: 7px 10px; }
+  .md-body pre { padding: 14px 16px; }
+  .md-body pre code { font-size: 12px; }
+
+  /* Status bar */
+  .statusbar { padding: 0 14px; font-size: 10px; height: 24px; }
+
+  /* Body — allow vertical scroll, prevent horizontal blowout */
+  body {
+    height: auto;
+    overflow-x: hidden;
+    overflow-y: auto;
+    min-height: 100vh;
+  }
+
+  /* Header sticks to top so tabs are always reachable */
+  header {
+    position: sticky;
+    top: 0;
+    z-index: 20;
+    animation: none;
+  }
+
+  /* Markdown content — constrain to viewport width */
+  .md-body {
+    max-width: 100%;
+    overflow-x: hidden;
+    word-break: break-word;
+  }
+
+  /* Tables scroll independently — let cells wrap naturally */
+  .md-body table {
+    display: block;
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+    max-width: 100%;
+  }
+
+  .md-body th,
+  .md-body td {
+    white-space: normal;
+    word-break: break-word;
+  }
+
+  /* Code blocks already have overflow-x:auto — just clamp width */
+  .md-body pre {
+    max-width: 100%;
+  }
+
+  /* Inline code — allow wrapping */
+  .md-body code {
+    word-break: break-all;
+    white-space: pre-wrap;
+  }
+
+  .md-body pre code {
+    word-break: normal;
+    white-space: pre;
+  }
+}
+</style>
+</head>
+<body>
+
+<header>
+  <button class="sidebar-toggle" id="sidebar-toggle" onclick="toggleSidebar()" aria-label="Toggle file browser">☰</button>
+  <a href="index.html" class="wordmark">MC<span class="accent-dot"> · </span>Notes</a>
+  <div class="divider"></div>
+  <nav class="project-tabs" id="project-tabs">
+    <button class="tab active" data-project="Dashboard" onclick="selectProject('Dashboard', this)">
+      <span class="tab-dash-icon">⊞</span>Dashboard
+    </button>
+    <div class="tab-sep"></div>
+    <button class="tab" data-project="FM" onclick="selectProject('FM', this)">
+      <span class="tab-dot dot-fm"></span>FM
+    </button>
+    <button class="tab" data-project="FM_ML" onclick="selectProject('FM_ML', this)">
+      <span class="tab-dot dot-fmml"></span>FM_ML
+    </button>
+  </nav>
+  <button class="theme-toggle" onclick="toggleTheme()" aria-label="Toggle theme" title="Toggle theme">
+    <span class="icon sun">☀</span><span class="icon moon">☾</span>
+  </button>
+  
+  <a href="index.html" class="back-link">← portfolio</a>
+</header>
+
+<div class="sidebar-overlay" id="sidebar-overlay" onclick="toggleSidebar()"></div>
+<div class="layout">
+  <aside>
+    <div class="sidebar-header" id="sidebar-label">Explorer</div>
+    <div class="file-tree" id="file-tree"></div>
+  </aside>
+
+  <main>
+    <div class="content-header">
+      <div class="breadcrumb" id="breadcrumb">
+        <span id="bc-project">—</span>
+      </div>
+    </div>
+    <div class="content-scroll" id="content-scroll">
+      <div id="content-area"></div>
+    </div>
+  </main>
+</div>
+
+<div class="statusbar">
+  <div class="status-item"><div class="status-dot"></div> <span id="status-text">Select a file</span></div>
+</div>
+
+<script>
+// ── Project config ─────────────────────────────────────────────────────────
+const PROJECTS = {
+  "FM": {
+    label:  "FM",
+    color:  "fm",
+    accent: "#f5a833",
+    desc:   "",
+    files: [ // AUTO-FILES:FM:START
+    ] // AUTO-FILES:FM:END
+  },
+  "FM_ML": {
+    label:  "FM_ML",
+    color:  "fmml",
+    accent: "#a37cff",
+    desc:   "",
+    files: [ // AUTO-FILES:FM_ML:START
+    ] // AUTO-FILES:FM_ML:END
+  },
+};
+
+// ── State ──────────────────────────────────────────────────────────────────
+let activeProject = 'FM';
+let activeFile    = null;
+
+// ── Dashboard state ────────────────────────────────────────────────────────
+let calYear, calMonth;
+let selectedCalDate = null;
+
+// ── Date parsing ────────────────────────────────────────────────────────────
+// Matches "MM-DD-YY Notes.md" → { year, month (0-based), day, key }
+function parseNoteDate(filename) {
+  const m = filename.match(/^(\d{2})-(\d{2})-(\d{2})\s+Notes\.md$/i);
+  if (!m) return null;
+  const year  = 2000 + parseInt(m[3]);
+  const month = parseInt(m[1]) - 1;  // 0-based
+  const day   = parseInt(m[2]);
+  const key   = `${year}-${m[1]}-${m[2]}`;
+  return { year, month, day, key };
+}
+
+// ── Build date → notes map ─────────────────────────────────────────────────
+function buildDateMap() {
+  const map = {};
+  for (const [proj, cfg] of Object.entries(PROJECTS)) {
+    for (const fn of cfg.files) {
+      const d = parseNoteDate(fn);
+      if (!d) continue;
+      if (!map[d.key]) map[d.key] = [];
+      map[d.key].push({ project: proj, filename: fn, color: cfg.color });
+    }
+  }
+  return map;
+}
+
+// ── Constellation state ────────────────────────────────────────────────────
+let __constellation = null; // { nodes, rafId, canvas, ctx, tooltip, dpr, w, h, hoverId }
+
+// ── Show dashboard ─────────────────────────────────────────────────────────
+function showDashboard() {
+  document.querySelector('.layout').classList.add('dashboard-mode');
+  document.querySelector('main').classList.add('dashboard-active');
+  document.getElementById('status-text').textContent = 'Dashboard';
+
+  if (calYear === undefined) {
+    const dateMap = buildDateMap();
+    const keys = Object.keys(dateMap).sort();
+    if (keys.length > 0) {
+      const [y, mm] = keys[keys.length - 1].split('-');
+      calYear = parseInt(y); calMonth = parseInt(mm) - 1;
+    } else {
+      const now = new Date();
+      calYear = now.getFullYear(); calMonth = now.getMonth();
+    }
+  }
+
+  const totalNotes = Object.values(PROJECTS).reduce((s,c) => s + c.files.length, 0);
+  const dateMap = buildDateMap();
+  const activeDays = Object.keys(dateMap).length;
+
+  const area = document.getElementById('content-area');
+  area.innerHTML = `
+    <div class="dashboard-layout">
+      <div class="constellation-stage" id="constellation-stage">
+        <canvas id="constellation-canvas"></canvas>
+        <div class="constellation-tooltip" id="constellation-tooltip"></div>
+      </div>
+
+      <div class="dashboard-hud">
+        <div class="hud-eyebrow">Research Constellation</div>
+        <div class="hud-title">A living map of everything you're working on.</div>
+        <div class="hud-sub">Each node is a note; gravity pulls it toward its project. Hover to read, click to open. Use the calendar to isolate a date.</div>
+        <div class="hud-stats">
+          <div class="hud-stat"><span class="hud-stat-n">${String(totalNotes).padStart(2,'0')}</span><span class="hud-stat-l">Notes</span></div>
+          <div class="hud-stat"><span class="hud-stat-n">${String(activeDays).padStart(2,'0')}</span><span class="hud-stat-l">Active days</span></div>
+          <div class="hud-stat"><span class="hud-stat-n">${Object.keys(PROJECTS).length}</span><span class="hud-stat-l">Projects</span></div>
+        </div>
+        <div class="hud-hint"><span class="kbd">drag</span> to reposition <span style="opacity:0.5">·</span> <span class="kbd">click</span> to open</div>
+      </div>
+
+      <div class="cal-floating">
+        <div class="cal-panel">
+          <div class="cal-nav">
+            <button class="cal-nav-btn" onclick="shiftMonth(-1)" aria-label="Previous month">‹</button>
+            <span class="cal-month-label" id="cal-month-label"></span>
+            <button class="cal-nav-btn" onclick="shiftMonth(1)" aria-label="Next month">›</button>
+          </div>
+          <div class="cal-grid" id="cal-grid"></div>
+          <div class="cal-legend" id="cal-legend"></div>
+        </div>
+      </div>
+
+      <div class="notes-drawer" id="notes-drawer">
+        <div class="notes-drawer-head">
+          <button class="notes-drawer-close" onclick="closeDateDrawer()" aria-label="Close">×</button>
+          <div class="notes-drawer-eyebrow" id="drawer-eyebrow">Date selection</div>
+          <div class="notes-drawer-title" id="drawer-title">—</div>
+          <div class="notes-drawer-sub"   id="drawer-sub">—</div>
+        </div>
+        <div class="notes-drawer-body" id="drawer-body"></div>
+      </div>
+    </div>
+  `;
+
+  renderCalendar();
+  requestAnimationFrame(() => initConstellation());
+}
+
+// ── Constellation: build nodes & physics ───────────────────────────────────
+function buildConstellationNodes() {
+  const projectKeys = Object.keys(PROJECTS);
+  const nodes = [];
+
+  projectKeys.forEach((proj, pIdx) => {
+    const cfg = PROJECTS[proj];
+    cfg.files.forEach((filename, fIdx) => {
+      const d = parseNoteDate(filename);
+      const isHtml = filename.endsWith('.html');
+      // Pinned project anchors get a bigger radius
+      const isAnchor = /^(Cascadia dv\.v|Cascadia Offshore|Bransfield Basin Earthquakes)/i.test(filename);
+      nodes.push({
+        id: `${proj}/${filename}`,
+        project: proj,
+        projectIdx: pIdx,
+        filename,
+        color: cfg.color,
+        accent: cfg.accent,
+        date: d ? d.key : null,
+        isAnchor,
+        isHtml,
+        r: isAnchor ? 9 : (d ? 5.2 : 6),
+        x: 0, y: 0, vx: 0, vy: 0
+      });
+    });
+  });
+
+  return nodes;
+}
+
+function initConstellation() {
+  const canvas  = document.getElementById('constellation-canvas');
+  const tooltip = document.getElementById('constellation-tooltip');
+  if (!canvas) return;
+  const ctx = canvas.getContext('2d');
+
+  const nodes = buildConstellationNodes();
+
+  // Initial scatter
+  const stage = document.getElementById('constellation-stage');
+  const rect = stage.getBoundingClientRect();
+  nodes.forEach(n => {
+    const pIdx = n.projectIdx;
+    const numP = Object.keys(PROJECTS).length;
+    const cx = rect.width  * (0.30 + 0.20 * pIdx);
+    const cy = rect.height * (0.50 + (pIdx % 2 === 0 ? -0.05 : 0.05));
+    n.x = cx + (Math.random() - 0.5) * 180;
+    n.y = cy + (Math.random() - 0.5) * 140;
+  });
+
+  __constellation = {
+    nodes, canvas, ctx, tooltip,
+    dpr: 1, w: 0, h: 0,
+    hoverId: null,
+    hoverCentroid: -1,
+    highlightKey: null,
+    rafId: null,
+    t: 0,
+    centroids: [] // filled after first resize
+  };
+
+  resizeConstellationCanvas();
+  initCentroids();
+  window.addEventListener('resize', resizeConstellationCanvas);
+
+  // Pointer events cover mouse + touch uniformly
+  canvas.addEventListener('pointermove', onConstellationPointerMove);
+  canvas.addEventListener('pointerleave', () => {
+    if (!__constellation || __constellation.drag) return;
+    __constellation.hoverId = null;
+    tooltip.classList.remove('visible');
+    canvas.style.cursor = 'grab';
+  });
+  canvas.addEventListener('pointerdown', onConstellationPointerDown);
+  window.addEventListener('pointermove', onConstellationPointerDrag);
+  window.addEventListener('pointerup', onConstellationPointerUp);
+  window.addEventListener('pointercancel', onConstellationPointerUp);
+
+  tickConstellation();
+}
+
+function pointerPos(e) {
+  const c = __constellation;
+  const rect = c.canvas.getBoundingClientRect();
+  return { x: e.clientX - rect.left, y: e.clientY - rect.top };
+}
+
+function hitTestNode(x, y) {
+  const c = __constellation;
+  let hit = null, bestD = 18;
+  for (const n of c.nodes) {
+    const dx = n.x - x, dy = n.y - y;
+    const d = Math.sqrt(dx*dx + dy*dy);
+    if (d < Math.max(bestD, n.r + 8)) { bestD = d; hit = n; }
+  }
+  return hit;
+}
+
+// Returns centroid index, or -1. Nodes take priority over centroid hit.
+function hitTestCentroid(x, y) {
+  const c = __constellation;
+  for (let i = 0; i < c.centroids.length; i++) {
+    const cc = c.centroids[i];
+    const dx = cc.x - x, dy = cc.y - y;
+    const d = Math.sqrt(dx*dx + dy*dy);
+    // Ring-shaped hot zone: between r-14 and r+14 for the ring, or within the label band
+    if (d > cc.r - 14 && d < cc.r + 14) return i;
+  }
+  return -1;
+}
+
+function onConstellationPointerMove(e) {
+  const c = __constellation;
+  if (!c || c.drag) return;
+  const { x, y } = pointerPos(e);
+  const hitNode = hitTestNode(x, y);
+  const hitC = hitNode ? -1 : hitTestCentroid(x, y);
+
+  c.hoverId = hitNode ? hitNode.id : null;
+  c.hoverCentroid = hitC;
+  c.canvas.style.cursor = (hitNode || hitC >= 0) ? 'grab' : 'grab';
+
+  if (hitNode) {
+    c.tooltip.innerHTML =
+      `<span class="tt-label" style="color:var(--${hitNode.color})">${hitNode.project}</span>${hitNode.filename}`;
+    c.tooltip.style.left = `${hitNode.x}px`;
+    c.tooltip.style.top  = `${hitNode.y}px`;
+    c.tooltip.classList.add('visible');
+  } else if (hitC >= 0) {
+    const cc = c.centroids[hitC];
+    c.tooltip.innerHTML =
+      `<span class="tt-label" style="color:var(--${cc.color})">Cluster</span>${cc.label} — drag to reposition`;
+    c.tooltip.style.left = `${cc.x}px`;
+    c.tooltip.style.top  = `${cc.y - cc.r}px`;
+    c.tooltip.classList.add('visible');
+  } else {
+    c.tooltip.classList.remove('visible');
+  }
+}
+
+function resizeConstellationCanvas() {
+  const c = __constellation;
+  if (!c) return;
+  const stage = document.getElementById('constellation-stage');
+  const rect = stage.getBoundingClientRect();
+  const dpr = window.devicePixelRatio || 1;
+  const prevW = c.w, prevH = c.h;
+  c.w = rect.width; c.h = rect.height; c.dpr = dpr;
+  c.canvas.width  = Math.floor(rect.width * dpr);
+  c.canvas.height = Math.floor(rect.height * dpr);
+  c.canvas.style.width  = rect.width + 'px';
+  c.canvas.style.height = rect.height + 'px';
+  c.ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+
+  // Rescale existing centroids proportionally
+  if (c.centroids.length && prevW && prevH) {
+    const sx = c.w / prevW, sy = c.h / prevH;
+    c.centroids.forEach(p => { p.x *= sx; p.y *= sy; });
+  }
+}
+
+function initCentroids() {
+  const c = __constellation;
+  if (!c || c.centroids.length) return;
+  const names = Object.keys(PROJECTS);
+  // Anchor points along a shallow arc
+  const positions = [
+    { fx: 0.30, fy: 0.48 },
+    { fx: 0.55, fy: 0.60 },
+    { fx: 0.78, fy: 0.44 }
+  ];
+  for (let i = 0; i < names.length; i++) {
+    const p = positions[i] || { fx: 0.5, fy: 0.5 };
+    c.centroids.push({
+      project: names[i],
+      color:   PROJECTS[names[i]].color,
+      label:   PROJECTS[names[i]].label,
+      x: c.w * p.fx,
+      y: c.h * p.fy,
+      r: 52   // handle hit radius
+    });
+  }
+}
+
+function onConstellationPointerDown(e) {
+  const c = __constellation;
+  if (!c) return;
+  const { x, y } = pointerPos(e);
+  const hitNode = hitTestNode(x, y);
+  const hitCIdx = hitNode ? -1 : hitTestCentroid(x, y);
+  if (!hitNode && hitCIdx < 0) return;
+
+  c.canvas.setPointerCapture(e.pointerId);
+  c.canvas.style.cursor = 'grabbing';
+
+  if (hitNode) {
+    c.drag = {
+      kind: 'node', node: hitNode,
+      startX: x, startY: y,
+      offsetX: hitNode.x - x, offsetY: hitNode.y - y,
+      moved: false, pointerId: e.pointerId
+    };
+    hitNode.pinned = true;
+    hitNode.vx = hitNode.vy = 0;
+  } else {
+    const cc = c.centroids[hitCIdx];
+    c.drag = {
+      kind: 'centroid', centroid: cc,
+      startX: x, startY: y,
+      offsetX: cc.x - x, offsetY: cc.y - y,
+      moved: false, pointerId: e.pointerId
+    };
+  }
+
+  c.tooltip.classList.remove('visible');
+  e.preventDefault();
+}
+
+function onConstellationPointerDrag(e) {
+  const c = __constellation;
+  if (!c || !c.drag || e.pointerId !== c.drag.pointerId) return;
+  const { x, y } = pointerPos(e);
+  const d = c.drag;
+  const moved = Math.hypot(x - d.startX, y - d.startY);
+  if (moved > 4) d.moved = true;
+
+  if (d.kind === 'node') {
+    d.node.x = x + d.offsetX;
+    d.node.y = y + d.offsetY;
+    d.node.vx = d.node.vy = 0;
+  } else if (d.kind === 'centroid') {
+    d.centroid.x = x + d.offsetX;
+    d.centroid.y = y + d.offsetY;
+  }
+}
+
+function onConstellationPointerUp(e) {
+  const c = __constellation;
+  if (!c || !c.drag || e.pointerId !== c.drag.pointerId) return;
+  const d = c.drag;
+
+  if (d.kind === 'node') {
+    d.node.pinned = false;
+    if (!d.moved) {
+      // Treat as click — open note
+      c.canvas.style.cursor = 'grab';
+      try { c.canvas.releasePointerCapture(e.pointerId); } catch (_) {}
+      c.drag = null;
+      openNoteFromDashboard(d.node.project, d.node.filename);
+      return;
+    }
+  }
+
+  c.canvas.style.cursor = 'grab';
+  try { c.canvas.releasePointerCapture(e.pointerId); } catch (_) {}
+  c.drag = null;
+}
+
+function tickConstellation() {
+  const c = __constellation;
+  if (!c) return;
+
+  const ctx = c.ctx;
+  const w = c.w, h = c.h;
+  const nodes = c.nodes;
+  c.t += 1;
+
+  // Keep centroids inside the viewport softly (no orbit — user drags them)
+  for (const cc of c.centroids) {
+    const pad = 60;
+    if (cc.x < pad)       cc.x += (pad - cc.x) * 0.08;
+    if (cc.x > w - pad)   cc.x -= (cc.x - (w - pad)) * 0.08;
+    if (cc.y < pad)       cc.y += (pad - cc.y) * 0.08;
+    if (cc.y > h - pad)   cc.y -= (cc.y - (h - pad)) * 0.08;
+  }
+  const centroids = c.centroids;
+
+  // Forces
+  const GRAV = 0.0028;          // pull to project centroid
+  const REPEL = 1600;           // node-node repulsion
+  const DAMPING = 0.86;
+  const MIN_D2 = 64;
+
+  for (let i = 0; i < nodes.length; i++) {
+    const a = nodes[i];
+    if (a.pinned) continue;
+    const c0 = centroids[a.projectIdx];
+    a.vx += (c0.x - a.x) * GRAV;
+    a.vy += (c0.y - a.y) * GRAV;
+
+    for (let j = i + 1; j < nodes.length; j++) {
+      const b = nodes[j];
+      const dx = a.x - b.x, dy = a.y - b.y;
+      const d2 = Math.max(MIN_D2, dx*dx + dy*dy);
+      const f = REPEL / d2;
+      const d = Math.sqrt(d2);
+      const fx = (dx / d) * f, fy = (dy / d) * f;
+      if (!a.pinned) { a.vx += fx; a.vy += fy; }
+      if (!b.pinned) { b.vx -= fx; b.vy -= fy; }
+    }
+  }
+
+  // Integrate
+  for (const n of nodes) {
+    if (n.pinned) { n.vx = n.vy = 0; continue; }
+    n.vx *= DAMPING; n.vy *= DAMPING;
+    n.x += n.vx; n.y += n.vy;
+    // Soft bounds
+    const pad = 40;
+    if (n.x < pad)       n.vx += (pad - n.x) * 0.04;
+    if (n.x > w - pad)   n.vx -= (n.x - (w - pad)) * 0.04;
+    if (n.y < pad)       n.vy += (pad - n.y) * 0.04;
+    if (n.y > h - pad)   n.vy -= (n.y - (h - pad)) * 0.04;
+  }
+
+  // Draw
+  ctx.clearRect(0, 0, w, h);
+
+  // Edges: connect each node to its project centroid with a faint line
+  ctx.lineWidth = 1;
+  for (const n of nodes) {
+    const c0 = centroids[n.projectIdx];
+    const dimmed = c.highlightKey && n.date !== c.highlightKey;
+    ctx.strokeStyle = getColorForNode(n, dimmed ? 0.04 : 0.12);
+    ctx.beginPath();
+    ctx.moveTo(c0.x, c0.y);
+    ctx.lineTo(n.x, n.y);
+    ctx.stroke();
+  }
+
+  // Cross-project links on same date
+  const byDate = {};
+  for (const n of nodes) {
+    if (!n.date) continue;
+    (byDate[n.date] = byDate[n.date] || []).push(n);
+  }
+  ctx.lineWidth = 0.8;
+  for (const key in byDate) {
+    const group = byDate[key];
+    if (group.length < 2) continue;
+    const dimmed = c.highlightKey && key !== c.highlightKey;
+    ctx.strokeStyle = dimmed ? 'rgba(232,232,234,0.02)' : 'rgba(232,232,234,0.10)';
+    for (let i = 0; i < group.length - 1; i++) {
+      for (let j = i + 1; j < group.length; j++) {
+        ctx.beginPath();
+        ctx.moveTo(group[i].x, group[i].y);
+        ctx.lineTo(group[j].x, group[j].y);
+        ctx.stroke();
+      }
+    }
+  }
+
+  // Centroid wells + draggable handles
+  const draggingCentroid = c.drag && c.drag.kind === 'centroid' ? c.drag.centroid : null;
+  for (let i = 0; i < centroids.length; i++) {
+    const cc = centroids[i];
+    const isHover  = c.hoverCentroid === i;
+    const isDragging = draggingCentroid === cc;
+    const col = cc.color;
+
+    // Soft gravity well
+    const grad = ctx.createRadialGradient(cc.x, cc.y, 0, cc.x, cc.y, 100);
+    grad.addColorStop(0, getVarColor(col, isDragging ? 0.18 : isHover ? 0.12 : 0.08));
+    grad.addColorStop(1, getVarColor(col, 0));
+    ctx.fillStyle = grad;
+    ctx.beginPath();
+    ctx.arc(cc.x, cc.y, 100, 0, Math.PI * 2);
+    ctx.fill();
+
+    // Dashed handle ring
+    ctx.save();
+    ctx.setLineDash(isDragging ? [] : [4, 4]);
+    ctx.lineWidth = isDragging ? 1.5 : 1;
+    ctx.strokeStyle = getVarColor(col, isHover || isDragging ? 0.55 : 0.22);
+    ctx.beginPath();
+    ctx.arc(cc.x, cc.y, cc.r, 0, Math.PI * 2);
+    ctx.stroke();
+    ctx.restore();
+
+    // Label
+    ctx.fillStyle = getVarColor(col, isHover || isDragging ? 0.95 : 0.6);
+    ctx.font = `500 10px "Geist Mono", monospace`;
+    ctx.textAlign = 'center';
+    ctx.textBaseline = 'middle';
+    const labelY = cc.y + cc.r + 14;
+    ctx.fillText(cc.label.toUpperCase(), cc.x, labelY);
+  }
+
+  // Nodes
+  for (const n of nodes) {
+    const isHover = c.hoverId === n.id;
+    const isDragging = c.drag && c.drag.node === n;
+    const isHighlighted = c.highlightKey && n.date === c.highlightKey;
+    const dimmed = c.highlightKey && !isHighlighted;
+
+    const breathe = isDragging ? 1.15 : 1 + Math.sin(c.t * 0.04 + n.x * 0.02) * 0.08;
+    const r = (isHover || isDragging ? n.r + 3 : n.r) * breathe;
+
+    // Halo ring for highlighted / hover / anchor / dragging
+    if (isDragging) {
+      ctx.beginPath();
+      ctx.arc(n.x, n.y, r + 16, 0, Math.PI * 2);
+      ctx.fillStyle = getColorForNode(n, 0.12);
+      ctx.fill();
+    }
+    if (isHover || isHighlighted || isDragging) {
+      ctx.beginPath();
+      ctx.arc(n.x, n.y, r + 8, 0, Math.PI * 2);
+      ctx.fillStyle = getColorForNode(n, isDragging ? 0.18 : 0.10);
+      ctx.fill();
+    }
+    if (n.isAnchor) {
+      ctx.beginPath();
+      ctx.arc(n.x, n.y, r + 4, 0, Math.PI * 2);
+      ctx.strokeStyle = getColorForNode(n, dimmed ? 0.10 : 0.35);
+      ctx.lineWidth = 1;
+      ctx.stroke();
+    }
+
+    // Core
+    ctx.beginPath();
+    ctx.arc(n.x, n.y, r, 0, Math.PI * 2);
+    ctx.fillStyle = getColorForNode(n, dimmed ? 0.25 : 1);
+    ctx.fill();
+
+    // Inner highlight
+    ctx.beginPath();
+    ctx.arc(n.x - r*0.3, n.y - r*0.3, r * 0.4, 0, Math.PI * 2);
+    ctx.fillStyle = dimmed ? 'rgba(255,255,255,0.04)' : 'rgba(255,255,255,0.22)';
+    ctx.fill();
+  }
+
+  c.rafId = requestAnimationFrame(tickConstellation);
+}
+
+function getColorForNode(n, alpha) { return getVarColor(n.color, alpha); }
+
+// Resolve --<name> CSS var to rgba
+const __colorCache = {};
+function getVarColor(name, alpha) {
+  if (!__colorCache[name]) {
+    const hex = getComputedStyle(document.documentElement).getPropertyValue(`--${name}`).trim();
+    __colorCache[name] = hexToRgb(hex);
+  }
+  const { r, g, b } = __colorCache[name];
+  return `rgba(${r},${g},${b},${alpha})`;
+}
+
+function stopConstellation() {
+  if (!__constellation) return;
+  if (__constellation.rafId) cancelAnimationFrame(__constellation.rafId);
+  window.removeEventListener('resize', resizeConstellationCanvas);
+  window.removeEventListener('pointermove', onConstellationPointerDrag);
+  window.removeEventListener('pointerup', onConstellationPointerUp);
+  window.removeEventListener('pointercancel', onConstellationPointerUp);
+  __constellation = null;
+}
+
+function hexToRgb(h) {
+  h = h.replace('#','');
+  if (h.length === 3) h = h.split('').map(c => c + c).join('');
+  const n = parseInt(h, 16);
+  return { r: (n >> 16) & 255, g: (n >> 8) & 255, b: n & 255 };
+}
+
+// ── Render calendar ─────────────────────────────────────────────────────────
+function renderCalendar() {
+  const dateMap = buildDateMap();
+  const MONTH_NAMES = ['January','February','March','April','May','June',
+                       'July','August','September','October','November','December'];
+  const DOW = ['Su','Mo','Tu','We','Th','Fr','Sa'];
+
+  document.getElementById('cal-month-label').textContent =
+    `${MONTH_NAMES[calMonth]} ${calYear}`;
+
+  const grid = document.getElementById('cal-grid');
+  grid.innerHTML = '';
+
+  // Day-of-week headers
+  DOW.forEach(d => {
+    const el = document.createElement('div');
+    el.className = 'cal-dow';
+    el.textContent = d;
+    grid.appendChild(el);
+  });
+
+  const firstDow    = new Date(calYear, calMonth, 1).getDay();
+  const daysInMonth = new Date(calYear, calMonth + 1, 0).getDate();
+  const today       = new Date();
+
+  // Leading empty cells
+  for (let i = 0; i < firstDow; i++) {
+    const el = document.createElement('div');
+    el.className = 'cal-day other-month';
+    el.innerHTML = '<span class="cal-day-num"></span><span class="cal-dots"></span>';
+    grid.appendChild(el);
+  }
+
+  // Day cells
+  for (let d = 1; d <= daysInMonth; d++) {
+    const mm  = String(calMonth + 1).padStart(2, '0');
+    const dd  = String(d).padStart(2, '0');
+    const key = `${calYear}-${mm}-${dd}`;
+    const notes = dateMap[key] || [];
+
+    const isToday    = (today.getFullYear() === calYear &&
+                        today.getMonth()    === calMonth &&
+                        today.getDate()     === d);
+    const isSelected = (selectedCalDate === key);
+
+    const el = document.createElement('div');
+    el.className = 'cal-day' +
+      (notes.length  ? ' clickable'  : '') +
+      (isToday       ? ' today'      : '') +
+      (isSelected    ? ' selected'   : '');
+
+    // Unique project colors present on this date
+    const colors = [...new Set(notes.map(n => n.color))];
+    const dotsHTML = colors.map(c =>
+      `<span class="cal-dot" style="background:var(--${c})"></span>`
+    ).join('');
+
+    el.innerHTML =
+      `<span class="cal-day-num">${d}</span>` +
+      `<span class="cal-dots">${dotsHTML}</span>`;
+
+    if (notes.length) {
+      el.onclick = () => selectCalDate(key, d, notes);
+    }
+
+    grid.appendChild(el);
+  }
+
+  // Legend
+  const legend = document.getElementById('cal-legend');
+  legend.innerHTML = Object.entries(PROJECTS).map(([, cfg]) =>
+    `<span class="cal-legend-item">
+      <span class="cal-dot" style="background:var(--${cfg.color})"></span>
+      <span>${cfg.label}</span>
+    </span>`
+  ).join('');
+}
+
+function shiftMonth(delta) {
+  calMonth += delta;
+  if (calMonth > 11) { calMonth = 0; calYear++; }
+  if (calMonth < 0)  { calMonth = 11; calYear--; }
+  renderCalendar();
+}
+
+// ── Select a calendar date → open drawer + highlight nodes ─────────────────
+function selectCalDate(key, day, notes) {
+  selectedCalDate = key;
+  renderCalendar();
+
+  if (__constellation) __constellation.highlightKey = key;
+
+  const [year, mm] = key.split('-');
+  const SHORT_MONTHS = ['Jan','Feb','Mar','Apr','May','Jun',
+                        'Jul','Aug','Sep','Oct','Nov','Dec'];
+  const monthName = SHORT_MONTHS[parseInt(mm) - 1];
+
+  const drawer = document.getElementById('notes-drawer');
+  document.getElementById('drawer-eyebrow').textContent = `${year}`;
+  document.getElementById('drawer-title').textContent =
+    `${monthName} ${day}`;
+  document.getElementById('drawer-sub').textContent =
+    `${notes.length} note${notes.length !== 1 ? 's' : ''} captured on this date`;
+
+  document.getElementById('drawer-body').innerHTML =
+    notes.map(n => noteEntryHTML(n)).join('');
+
+  drawer.classList.add('open');
+  document.querySelector('.dashboard-layout')?.classList.add('drawer-open');
+}
+
+function closeDateDrawer() {
+  const drawer = document.getElementById('notes-drawer');
+  if (drawer) drawer.classList.remove('open');
+  document.querySelector('.dashboard-layout')?.classList.remove('drawer-open');
+  selectedCalDate = null;
+  if (__constellation) __constellation.highlightKey = null;
+  renderCalendar();
+}
+
+function noteEntryHTML(n) {
+  const esc = n.filename.replace(/'/g, "\\'");
+  return `
+    <div class="note-entry"
+         onclick="openNoteFromDashboard('${n.project}','${esc}')">
+      <span class="note-proj-badge"
+            style="background:var(--${n.color}-glow);color:var(--${n.color});border:1px solid var(--${n.color}-dim)">
+        ${n.project}
+      </span>
+      <span class="note-filename">${n.filename}</span>
+      <span class="note-open-hint">open →</span>
+    </div>`;
+}
+
+// ── Open note from dashboard ───────────────────────────────────────────────
+function openNoteFromDashboard(project, filename) {
+  stopConstellation();
+  // Exit dashboard mode
+  document.querySelector('.layout').classList.remove('dashboard-mode');
+  document.querySelector('main').classList.remove('dashboard-active');
+
+  // Activate the project tab
+  document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+  const tabEl = document.querySelector(`.tab[data-project="${project}"]`);
+  if (tabEl) tabEl.classList.add('active');
+
+  activeProject = project;
+  activeFile    = null;
+
+  renderSidebar(project);
+
+  document.getElementById('breadcrumb').innerHTML =
+    `<span id="bc-project">${project}</span>`;
+
+  // Small delay to let DOM update before finding the file item
+  setTimeout(() => {
+    const items = document.querySelectorAll('.file-item');
+    let match = null;
+    items.forEach(i => { if (i.dataset.file === filename) match = i; });
+    loadFile(project, filename, match);
+  }, 40);
+}
+
+// ── Render sidebar ─────────────────────────────────────────────────────────
+function renderSidebar(project) {
+  const cfg  = PROJECTS[project];
+  const tree = document.getElementById('file-tree');
+  document.getElementById('sidebar-label').textContent = cfg.label.toUpperCase();
+
+  const folder = document.createElement('div');
+  folder.className = 'folder open';
+
+  const dotClass = `dot-${cfg.color}`;
+  folder.innerHTML = `
+    <div class="folder-label" onclick="this.parentElement.classList.toggle('open')">
+      <span class="chevron">▶</span>
+      <span class="folder-dot ${dotClass}"></span>
+      <span class="folder-name">${project}</span>
+    </div>
+    <div class="file-list" id="file-list"></div>
+  `;
+  tree.innerHTML = '';
+  tree.appendChild(folder);
+
+  const list = folder.querySelector('#file-list');
+  cfg.files.forEach((filename, i) => {
+    const item = document.createElement('div');
+    item.className = 'file-item';
+    item.dataset.file = filename;
+    item.style.setProperty('--i', i);
+    const icon = filename.endsWith('.html') ? '⬡' : '◈';
+    item.innerHTML = `<span class="file-icon">${icon}</span>${filename}`;
+    item.onclick = () => { loadFile(project, filename, item); closeSidebar(); };
+    list.appendChild(item);
+  });
+}
+
+// ── Project switch ─────────────────────────────────────────────────────────
+function toggleTheme() {
+  var cur = document.documentElement.getAttribute('data-theme') || 'midnight';
+  var next = cur === 'midnight' ? 'paper' : 'midnight';
+  document.documentElement.setAttribute('data-theme', next);
+  try { localStorage.setItem('vaultnotes-theme', next); } catch (e) {}
+}
+
+function selectProject(project, tabEl) {
+  document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+  tabEl.classList.add('active');
+
+  if (project === 'Dashboard') {
+    document.getElementById('sidebar-toggle').style.display = 'none';
+    stopConstellation();
+    showDashboard();
+    return;
+  }
+
+  stopConstellation();
+  document.getElementById('sidebar-toggle').style.display = '';
+
+  // Exit dashboard mode
+  document.querySelector('.layout').classList.remove('dashboard-mode');
+  document.querySelector('main').classList.remove('dashboard-active');
+
+  activeProject = project;
+  activeFile    = null;
+
+  renderSidebar(project);
+  showLanding(project);
+
+  document.getElementById('bc-project').textContent = project;
+  document.getElementById('status-text').textContent = `${PROJECTS[project].files.length} files`;
+}
+
+// ── Landing screen ─────────────────────────────────────────────────────────
+function showLanding(project) {
+  const cfg  = PROJECTS[project];
+  const area = document.getElementById('content-area');
+
+  const filesHTML = cfg.files.map((f, i) => {
+    const isHtml = f.endsWith('.html');
+    return `
+      <div class="landing-file ${cfg.color}" style="--i:${i}"
+           onclick="loadFileByName('${project}','${f.replace(/'/g,"\\'")}')">
+        <span class="landing-file-icon">${isHtml ? 'html' : 'md'}</span>
+        <span class="landing-file-name">${f}</span>
+        <span class="landing-file-arrow">→</span>
+      </div>`;
+  }).join('');
+
+  area.innerHTML = `
+    <div class="project-landing">
+      <div class="project-hero ${cfg.color}">
+        <div class="card-label ${cfg.color}">${cfg.label}</div>
+        <div class="card-title">${cfg.label}</div>
+        <div class="card-desc">${cfg.desc}</div>
+        <div class="card-count">${String(cfg.files.length).padStart(2,'0')} / ${cfg.files.length === 1 ? 'note' : 'notes'}</div>
+      </div>
+      <div class="landing-files">
+        <div class="landing-files-head">Files · ${cfg.files.length}</div>
+        ${filesHTML}
+      </div>
+    </div>
+  `;
+
+  document.getElementById('breadcrumb').innerHTML =
+    `<span id="bc-project">${project}</span>`;
+}
+
+// ── Load a file ────────────────────────────────────────────────────────────
+// ── Wikilink helpers ───────────────────────────────────────────────────────
+const escHtml = s => String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+const escAttr = s => escHtml(s).replace(/"/g,'&quot;');
+
+// Normalize for fuzzy filename matching: lowercase, strip .md, unify separators,
+// drop punctuation that Obsidian ignores in link resolution.
+function normKey(s) {
+  return String(s)
+    .toLowerCase()
+    .replace(/\.md$/, '')
+    .replace(/[_\s\-]+/g, ' ')
+    .trim();
+}
+
+// Build a {normalized-name → [{project, filename}]} index over all projects.
+let _wikiIndex = null;
+function wikiIndex() {
+  if (_wikiIndex) return _wikiIndex;
+  const idx = {};
+  for (const [project, cfg] of Object.entries(PROJECTS)) {
+    if (!cfg.files) continue;
+    for (const filename of cfg.files) {
+      const key = normKey(filename);
+      (idx[key] = idx[key] || []).push({ project, filename });
+    }
+  }
+  _wikiIndex = idx;
+  return idx;
+}
+
+// Resolve [[target]] → {project, filename} or null. Prefers current project.
+function resolveWikilink(target, fromProject) {
+  let t = String(target).split('#')[0].split('^')[0];
+  const slash = t.lastIndexOf('/');
+  if (slash !== -1) t = t.slice(slash + 1);
+  const hits = wikiIndex()[normKey(t)];
+  if (!hits || !hits.length) return null;
+  return hits.find(h => h.project === fromProject) || hits[0];
+}
+
+function hydrateWikilinks(container, fromProject) {
+  container.querySelectorAll('a.wikilink[data-target]').forEach(a => {
+    const target = a.getAttribute('data-target');
+    const hit = resolveWikilink(target, fromProject);
+    if (!hit) {
+      a.classList.add('broken');
+      a.title = `No note found for "${target}"`;
+      a.addEventListener('click', e => e.preventDefault());
+      return;
+    }
+    a.href = '#' + encodeURIComponent(hit.project) + '/' + encodeURIComponent(hit.filename);
+    a.title = `${hit.project} › ${hit.filename}`;
+    a.addEventListener('click', e => {
+      e.preventDefault();
+      if (hit.project !== activeProject) {
+        const tab = document.querySelector(`.tab[data-project="${hit.project}"]`);
+        if (tab) selectProject(hit.project, tab);
+      }
+      setTimeout(() => loadFileByName(hit.project, hit.filename), 0);
+    });
+  });
+}
+
+function renderObsidianMarkdown(md) {
+  // 1. Extract math so marked's GFM doesn't mangle underscores/asterisks inside formulas.
+  const mathBlocks = [];
+  const stash = (tex, display) => `@@MATHBLOCK${mathBlocks.push({tex, display}) - 1}@@`;
+
+  let work = md
+    .replace(/\$\$([\s\S]+?)\$\$/g, (_, tex) => stash(tex.trim(), true))
+    .replace(/(?<![\\$])\$(?!\s)([^\$\n]+?)(?<!\s)\$(?!\$)/g, (_, tex) => stash(tex, false));
+
+  // 2. Obsidian-isms.
+  work = work
+    .replace(/!\[\[([^\]]+)\]\]/g, '_[image: $1]_')
+    .replace(/\[\[([^\]|]+)\|([^\]]+)\]\]/g,
+      (_, t, d) => `<a class="wikilink" data-target="${escAttr(t)}">${escHtml(d)}</a>`)
+    .replace(/\[\[([^\]]+)\]\]/g,
+      (_, t) => `<a class="wikilink" data-target="${escAttr(t)}">${escHtml(t)}</a>`)
+    .replace(/==([^=\n]+)==/g, '<mark>$1</mark>');
+
+  // 3. Markdown → HTML.
+  let html = marked.parse(work);
+
+  // 4. Restore math, rendered with KaTeX.
+  html = html.replace(/@@MATHBLOCK(\d+)@@/g, (_, i) => {
+    const { tex, display } = mathBlocks[+i];
+    if (!window.katex) return display ? `<pre>$$${tex}$$</pre>` : `<code>$${tex}$</code>`;
+    try {
+      return katex.renderToString(tex, { displayMode: display, throwOnError: false });
+    } catch (e) {
+      return `<code>${display ? '$$' + tex + '$$' : '$' + tex + '$'}</code>`;
+    }
+  });
+
+  return html;
+}
+
+async function loadFile(project, filename, itemEl) {
+  document.querySelectorAll('.file-item').forEach(i => i.classList.remove('active'));
+  if (itemEl) itemEl.classList.add('active');
+  activeFile = filename;
+  location.hash = encodeURIComponent(project) + '/' + encodeURIComponent(filename);
+
+  document.getElementById('breadcrumb').innerHTML =
+    `<span id="bc-project">${project}</span>
+     <span style="color:var(--text-muted)">›</span>
+     <span>${filename}</span>`;
+
+  document.getElementById('status-text').textContent = `Loading ${filename}…`;
+
+  const area = document.getElementById('content-area');
+  area.innerHTML = `
+    <div class="loading">
+      <div class="skel h1"></div>
+      <div class="skel p"></div>
+      <div class="skel p mid"></div>
+      <div class="skel p"></div>
+      <div class="skel p short"></div>
+    </div>`;
+
+  const path = `/notes/${encodeURIComponent(project)}/${encodeURIComponent(filename)}`;
+
+  const scroll = document.getElementById('content-scroll');
+
+  // HTML files — render in a full-height iframe
+  if (filename.endsWith('.html')) {
+    scroll.classList.add('iframe-mode');
+    area.innerHTML = `<iframe src="${path}" style="width:100%;height:100%;border:none;display:block;"></iframe>`;
+    document.getElementById('status-text').textContent = filename;
+    return;
+  }
+
+  scroll.classList.remove('iframe-mode');
+
+  try {
+    const res = await fetch(path);
+    if (!res.ok) throw new Error(`HTTP ${res.status}`);
+    const md = await res.text();
+
+    area.innerHTML = `<div class="md-body">${renderObsidianMarkdown(md)}</div>`;
+    area.querySelectorAll('input[type="checkbox"]').forEach(cb => cb.disabled = true);
+    hydrateWikilinks(area, project);
+
+    document.getElementById('content-scroll').scrollTop = 0;
+    document.getElementById('status-text').textContent = filename;
+  } catch (err) {
+    area.innerHTML = `
+      <div class="empty-state">
+        <div class="empty-glyph">⚠</div>
+        <p>Could not load file</p>
+        <p style="color:var(--text-muted);font-size:10px;margin-top:4px">${err.message}</p>
+        <p style="color:var(--text-muted);font-size:10px">Path: ${path}</p>
+      </div>`;
+    document.getElementById('status-text').textContent = 'Error loading file';
+  }
+}
+
+function loadFileByName(project, filename) {
+  const items = document.querySelectorAll('.file-item');
+  let match = null;
+  items.forEach(i => { if (i.dataset.file === filename) match = i; });
+  loadFile(project, filename, match);
+}
+
+// ── Mobile sidebar toggle ─────────────────────────────────────────────────
+function toggleSidebar() {
+  const aside   = document.querySelector('aside');
+  const overlay = document.getElementById('sidebar-overlay');
+  const isOpen  = aside.classList.toggle('open');
+  overlay.classList.toggle('visible', isOpen);
+}
+
+function closeSidebar() {
+  document.querySelector('aside').classList.remove('open');
+  document.getElementById('sidebar-overlay').classList.remove('visible');
+}
+
+// ── Init ───────────────────────────────────────────────────────────────────
+marked.setOptions({ breaks: true, gfm: true });
+
+// Hash routing — open a specific file if URL contains #Project/filename
+(function () {
+  const hash = location.hash.slice(1);
+  if (!hash) { showDashboard(); return; }
+  const slash = hash.indexOf('/');
+  if (slash === -1) { showDashboard(); return; }
+  const project  = decodeURIComponent(hash.slice(0, slash));
+  const filename = decodeURIComponent(hash.slice(slash + 1));
+  const tabEl = document.querySelector(`.tab[data-project="${project}"]`);
+  if (!tabEl) { showDashboard(); return; }
+  selectProject(project, tabEl);
+  // Wait one tick for the file list to render, then load the file
+  setTimeout(() => loadFileByName(project, filename), 0);
+})();
+</script>
+</body>
+</html>
