@@ -287,6 +287,13 @@ a:hover { color: var(--accent); }
 }
 
 /* ===== Research ===== */
+.research-intro {
+  margin-top: 18px;
+  max-width: 820px;
+  color: var(--text);
+  font-size: 1.02rem;
+  line-height: 1.75;
+}
 .research-grid {
   display: grid; grid-template-columns: 1fr 1fr; gap: 28px;
   margin-top: 36px;
@@ -306,11 +313,100 @@ a:hover { color: var(--accent); }
 .research-icon { font-size: 0.7rem; color: var(--accent); margin-bottom: 10px; }
 .research-card h3 { font-size: 1rem; color: var(--navy); font-weight: 600; margin-bottom: 6px; }
 .research-place { font-size: 0.85rem; color: var(--teal); margin-bottom: 14px; font-weight: 500; }
+.research-figures { margin-top: 48px; }
+.research-figures-title {
+  font-size: 0.85rem; font-weight: 700;
+  text-transform: uppercase; letter-spacing: 0.07em;
+  color: var(--navy);
+  margin-bottom: 20px;
+  padding-bottom: 10px;
+  border-bottom: 1px solid var(--border);
+}
+.research-figures-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+  gap: 24px;
+}
+.research-figure {
+  background: var(--white);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  overflow: hidden;
+  box-shadow: var(--shadow);
+}
+.research-figure img { width: 100%; display: block; }
+.research-figure figcaption {
+  font-size: 0.8rem; color: var(--muted);
+  padding: 10px 14px;
+  border-top: 1px solid var(--border);
+}
 .research-card ul { padding-left: 18px; }
 .research-card li {
   font-size: 0.9rem; color: var(--text);
   margin-bottom: 8px; line-height: 1.6;
 }
+
+/* ===== Fieldwork ===== */
+.seadays {
+  display: inline-flex; align-items: baseline; gap: 12px;
+  margin-top: 8px;
+  background: var(--white);
+  border: 1px solid var(--border);
+  border-radius: 30px;
+  padding: 12px 28px;
+  box-shadow: var(--shadow);
+}
+.seadays-num {
+  font-size: 2rem; font-weight: 700;
+  color: var(--teal); line-height: 1;
+}
+.seadays-label {
+  font-size: 0.8rem; font-weight: 600;
+  letter-spacing: 0.05em; text-transform: uppercase;
+  color: var(--muted);
+}
+.fieldwork-list { padding-left: 18px; margin-top: 14px; }
+.fieldwork-list li {
+  font-size: 0.9rem; color: var(--text);
+  margin-bottom: 8px; line-height: 1.6;
+}
+.fieldwork-photo {
+  margin-top: 16px;
+  max-width: 460px;
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  overflow: hidden;
+  background: var(--white);
+  box-shadow: var(--shadow);
+}
+.fieldwork-photo img { width: 100%; display: block; }
+.fieldwork-photo figcaption {
+  font-size: 0.8rem; color: var(--muted);
+  padding: 10px 14px;
+  border-top: 1px solid var(--border);
+}
+.fieldwork-plan {
+  margin: 28px auto 0;
+  max-width: 420px;
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  overflow: hidden;
+  background: var(--white);
+  box-shadow: var(--shadow);
+}
+.fieldwork-plan img { width: 100%; display: block; }
+.fieldwork-plan figcaption {
+  font-size: 0.8rem; color: var(--muted);
+  padding: 10px 16px;
+  border-top: 1px solid var(--border);
+}
+.days {
+  font-size: 0.78rem; font-weight: 600;
+  color: var(--teal);
+  background: #e8f7fa;
+  padding: 2px 10px; border-radius: 20px;
+}
+.placeholder { color: var(--muted); font-style: italic; }
 
 /* ===== Publications ===== */
 .pub-list {
