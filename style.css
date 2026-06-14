@@ -200,6 +200,14 @@ a:hover { color: var(--accent); }
   margin-top: 4px; margin-bottom: 36px;
   color: var(--muted); font-size: 0.95rem;
 }
+.subsection-title {
+  font-family: 'Merriweather', serif;
+  font-size: 1.2rem;
+  color: var(--navy);
+  margin-top: 44px;
+  margin-bottom: 6px;
+}
+.subsection-title:first-of-type { margin-top: 28px; }
 .section-sub a { color: var(--teal); font-weight: 500; }
 
 /* ===== About ===== */
