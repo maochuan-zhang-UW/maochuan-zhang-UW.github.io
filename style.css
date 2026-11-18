@@ -524,3 +524,20 @@ footer {
   .about-stats { grid-template-columns: 1fr 1fr; }
   .hero h1 { font-size: 2rem; }
 }
+
+/* Axial 3D Explorer card */
+.explorer-card {
+  display: flex; align-items: center; justify-content: space-between;
+  gap: 24px; flex-wrap: wrap;
+  padding: 28px 32px;
+  border-radius: var(--radius);
+  background: linear-gradient(135deg, var(--navy), var(--teal));
+  color: var(--white);
+  text-decoration: none;
+  transition: transform 0.2s, box-shadow 0.2s;
+}
+.explorer-card:hover { transform: translateY(-2px); box-shadow: 0 8px 24px rgba(15,37,64,0.25); }
+.explorer-text { flex: 1 1 320px; }
+.explorer-text h4 { font-size: 1.2rem; margin-bottom: 8px; color: var(--white); }
+.explorer-text p { color: rgba(255,255,255,0.85); line-height: 1.6; margin: 0; }
+.explorer-card .btn { flex-shrink: 0; }
